@@ -135,6 +135,27 @@
     .chart-wrap  { position: relative; height: 300px; }
 
     .footer { text-align: center; color: var(--muted); font-size: 12px; margin-top: 28px; }
+
+    /* ===== TOGGLE BUTTON ===== */
+    .toggle-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--muted);
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 4px 10px;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+    .toggle-btn:hover { border-color: var(--accent2); color: var(--text); }
+    /* ON = active/highlighted */
+    .toggle-btn--on  { border-color: var(--accent2); color: var(--text); }
+    /* OFF = dimmed */
+    .toggle-btn--off { opacity: 0.4; }
   </style>
 </head>
 <body>
@@ -164,9 +185,9 @@
         </select>
       </div>
 
-      <!-- Granularity dropdown (options change based on period) -->
+      <!-- Frequency dropdown (options change based on period) -->
       <div class="control-group">
-        <span class="control-label">Granularity</span>
+        <span class="control-label">Frequency</span>
         <select id="selGranularity" onchange="updateDashboard()">
           <!-- populated dynamically -->
         </select>
@@ -211,10 +232,11 @@
           <div class="legend-dot" style="background:var(--accent)"></div>
           Distance (km)
         </div>
-        <div class="legend-item">
+        <!-- Toggle button for run count line -->
+        <button id="toggleCount" onclick="toggleRunCount()" class="toggle-btn toggle-btn--on">
           <div class="legend-line" style="background:var(--accent2)"></div>
           Run count
-        </div>
+        </button>
       </div>
     </div>
     <div class="chart-wrap">
@@ -437,6 +459,23 @@ function updateDashboard() {
       }
     }
   });
+}
+
+// ===== RUN COUNT TOGGLE =====
+let showRunCount = true;
+
+function toggleRunCount() {
+  showRunCount = !showRunCount;
+  const btn = document.getElementById('toggleCount');
+  btn.className = 'toggle-btn ' + (showRunCount ? 'toggle-btn--on' : 'toggle-btn--off');
+
+  if (chartInstance) {
+    // Toggle the run count dataset (index 1) visibility without rebuilding the chart
+    chartInstance.data.datasets[1].hidden = !showRunCount;
+    // Also hide/show the right axis
+    chartInstance.options.scales.yCount.display = showRunCount;
+    chartInstance.update();
+  }
 }
 
 // ===== INIT =====
