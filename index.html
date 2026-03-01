@@ -180,8 +180,8 @@
         <span class="control-label">Period</span>
         <select id="selPeriod" onchange="onPeriodChange()">
           <option value="1w">1 Week</option>
-          <option value="1m">1 Month</option>
-          <option value="3m" selected>3 Months</option>
+          <option value="1m" selected>1 Month</option>
+          <option value="3m">3 Months</option>
           <option value="6m">6 Months</option>
           <option value="1y">1 Year</option>
         </select>
@@ -524,7 +524,10 @@ function toggleRunCount() {
 }
 
 // ===== INIT =====
-onPeriodChange(); // builds granularity options then renders
+// Init: build granularity options, then force daily as default
+onPeriodChange();
+document.getElementById('selGranularity').value = 'daily';
+updateDashboard();
 </script>
 </body>
 </html>
