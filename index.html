@@ -131,6 +131,30 @@
     .stat-unit { font-size: 14px; font-weight: 500; opacity: 0.7; }
     .stat-sub { font-size: 11px; color: var(--muted); margin-top: 6px; }
 
+    /* ===== TARGET TRACKING BAR (inside stat card) ===== */
+    .stat-target { margin-top: 10px; }
+    .stat-target-bar-wrap {
+      width: 100%;
+      height: 4px;
+      background: rgba(255,255,255,0.07);
+      border-radius: 99px;
+      overflow: hidden;
+      margin-bottom: 5px;
+    }
+    .stat-target-bar {
+      height: 100%;
+      border-radius: 99px;
+      background: var(--accent);
+      transition: width 0.4s ease;
+      max-width: 100%;
+    }
+    .stat-target-label {
+      font-size: 10px;
+      color: var(--muted);
+      display: flex;
+      justify-content: space-between;
+    }
+
     /* ===== CHART CARD ===== */
     .chart-card {
       background: var(--surface);
@@ -227,10 +251,17 @@
       <div class="stat-value" id="statTotalKm">—<span class="stat-unit">km</span></div>
       <div class="stat-sub" id="statTotalSub"></div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card" id="cardAvgKm">
       <div class="stat-label">Avg Weekly km</div>
       <div class="stat-value" id="statAvgKm">—<span class="stat-unit">km</span></div>
       <div class="stat-sub" id="statAvgSub"></div>
+      <!-- Target tracking row — shown only when a running target is saved -->
+      <div class="stat-target" id="statAvgTarget" style="display:none;">
+        <div class="stat-target-bar-wrap">
+          <div class="stat-target-bar" id="statAvgTargetBar"></div>
+        </div>
+        <div class="stat-target-label" id="statAvgTargetLabel"></div>
+      </div>
     </div>
     <div class="stat-card">
       <div class="stat-label">Total Runs</div>
@@ -396,6 +427,9 @@ function updateDashboard() {
   document.getElementById('statRuns').textContent   = totalRuns;
   document.getElementById('statBest').innerHTML     = bestWeek.km.toFixed(1) + '<span class="stat-unit">km</span>';
 
+  // Update target tracking bar on avg weekly km card
+  updateTargetTracking(avgKm);
+
   document.getElementById('statTotalSub').textContent = periodLabel;
   document.getElementById('statAvgSub').textContent   = `${weekBuckets.length} weeks · ${periodLabel}`;
   document.getElementById('statRunsSub').textContent  = periodLabel;
@@ -543,6 +577,35 @@ function toggleRunCount() {
     chartInstance.options.scales.yCount.display = showRunCount;
     chartInstance.update();
   }
+}
+
+// ===== LOAD TARGET FROM LOCALSTORAGE AND UPDATE AVG KM CARD =====
+function updateTargetTracking(currentAvgKm) {
+  const saved = JSON.parse(localStorage.getItem('fitDash_runTarget') || '{}');
+  const targetEl = document.getElementById('statAvgTarget');
+
+  if (!saved.value) {
+    targetEl.style.display = 'none';
+    return;
+  }
+
+  // Convert saved target to weekly km regardless of which cadence was saved
+  const targetWeekly = saved.cadence === 'monthly'
+    ? parseFloat(saved.value) / 4.33
+    : parseFloat(saved.value);
+
+  const pct   = Math.min(100, (currentAvgKm / targetWeekly) * 100);
+  const diff  = currentAvgKm - targetWeekly;
+  const sign  = diff >= 0 ? '+' : '';
+  const color = diff >= 0 ? '#4ade80' : '#f97316'; // green if on/above target, orange if below
+
+  document.getElementById('statAvgTargetBar').style.width      = pct + '%';
+  document.getElementById('statAvgTargetBar').style.background = color;
+  document.getElementById('statAvgTargetLabel').innerHTML =
+    `<span style="color:${color}; font-weight:700;">${sign}${diff.toFixed(1)} km</span>` +
+    `<span>target: ${targetWeekly.toFixed(1)} km/wk</span>`;
+
+  targetEl.style.display = 'block';
 }
 
 // ===== INIT =====
