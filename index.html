@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Daniel's Running Dashboard</title>
+  <title>Fitness Dashboard</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
   <style>
@@ -67,6 +67,25 @@
       letter-spacing: 0.5px;
       white-space: nowrap;
     }
+    /* ===== TARGETS NAV BUTTON ===== */
+    .nav-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      text-decoration: none;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      white-space: nowrap;
+    }
+    .nav-btn:hover { border-color: var(--accent2); background: rgba(124,58,237,0.08); }
+
     /* EDIT THIS: dropdown style */
     select {
       background: var(--surface);
@@ -167,13 +186,16 @@
     <div class="header-left">
       <div class="header-logo">🏃</div>
       <div>
-        <h1>Running Dashboard</h1>
+        <h1>Fitness Dashboard</h1>
         <p id="headerSub">Daniel Chen · Strava</p>
       </div>
     </div>
 
     <!-- ===== CONTROLS ===== -->
     <div class="controls">
+
+      <!-- Targets page button -->
+      <a href="targets.html" class="nav-btn">🎯 Targets</a>
 
       <!-- Period dropdown -->
       <div class="control-group">
