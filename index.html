@@ -211,7 +211,21 @@
     .toggle-btn--on[data-color="purple"] { border-color: var(--accent2); color: var(--text); }
     /* OFF = dimmed */
     .toggle-btn--off { opacity: 0.4; }
-  </style>
+  
+  /* ── Fitness delta badges (arrow + number next to CTL/ATL/Form) ── */
+  .fit-delta {
+    font-size: 0.55em;
+    font-weight: 600;
+    vertical-align: super;
+    margin-left: 4px;
+    letter-spacing: 0;
+    opacity: 0.9;
+  }
+  .fit-delta-up    { color: #22c55e; }   /* green  — going in good direction */
+  .fit-delta-down  { color: #ef4444; }   /* red    — going in bad direction  */
+  .fit-delta-neutral { color: #6b7280; } /* grey   — no meaningful change    */
+
+</style>
 </head>
 <body>
 
@@ -393,7 +407,7 @@ function runLoad(r) {
   return r.km; // fallback: distance only
 }
 
-function computeFitness() {
+function computeFitness(upToDate = null) {
   const CTL_DECAY = Math.exp(-1 / 42);
   const ATL_DECAY = Math.exp(-1 / 7);
 
@@ -403,14 +417,14 @@ function computeFitness() {
     loadByDate[r.date] = (loadByDate[r.date] || 0) + runLoad(r);
   }
 
-  // Walk day by day from first run to today, applying decay
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  // Walk day by day from first run to upToDate (or today)
+  const end = upToDate ? new Date(upToDate) : new Date();
+  end.setHours(0, 0, 0, 0);
   const start = new Date(ALL_RUNS[0].date);
 
   let ctl = 0, atl = 0;
   const d = new Date(start);
-  while (d <= today) {
+  while (d <= end) {
     const dateStr = d.toISOString().slice(0, 10);
     const load = loadByDate[dateStr] || 0;
     ctl = ctl * CTL_DECAY + load * (1 - CTL_DECAY);
@@ -434,10 +448,30 @@ function fitnessColor(ratio) {
 function renderFitness() {
   const { ctl, atl, form } = computeFitness();
 
+  // Compute pre-last-run values for delta arrows
+  // Find the date of the most recent run, then compute fitness up to the day before
+  const sortedDates = [...new Set(ALL_RUNS.map(r => r.date))].sort();
+  const lastRunDate = sortedDates[sortedDates.length - 1];
+  const prevDate = new Date(lastRunDate);
+  prevDate.setDate(prevDate.getDate() - 1);
+  const prevDateStr = prevDate.toISOString().slice(0, 10);
+  const prev = computeFitness(prevDateStr);
+
+  // Helper: render a delta badge next to a number element
+  function delta(current, previous, invertColor = false) {
+    const diff = current - previous;
+    if (Math.abs(diff) < 0.05) return '<span class="fit-delta fit-delta-neutral">―</span>';
+    const arrow = diff > 0 ? '▲' : '▼';
+    // For ATL (fatigue), going up is bad (invertColor=true)
+    const isGood = invertColor ? diff < 0 : diff > 0;
+    const cls = isGood ? 'fit-delta fit-delta-up' : 'fit-delta fit-delta-down';
+    return \`<span class="\${cls}">\${arrow} \${Math.abs(diff).toFixed(1)}</span>\`;
+  }
+
   // ── CTL display + commentary ──
   // Higher CTL = better fitness = greener; lower = redder
   const ctlEl = document.getElementById('statCTL');
-  ctlEl.textContent = ctl.toFixed(1);
+  ctlEl.innerHTML = ctl.toFixed(1) + delta(ctl, prev.ctl);
   ctlEl.style.color = fitnessColor(Math.min(ctl / 120, 1));
   let ctlComment;
   if      (ctl >= 80) ctlComment = 'Strong aerobic base — you\'re in the best shape of your recent training.';
@@ -449,7 +483,7 @@ function renderFitness() {
   // ── ATL display + commentary ──
   // Higher ATL = more fatigue = redder; lower = greener (well rested)
   const atlEl = document.getElementById('statATL');
-  atlEl.textContent = atl.toFixed(1);
+  atlEl.innerHTML = atl.toFixed(1) + delta(atl, prev.atl, true);
   atlEl.style.color = fitnessColor(1 - Math.min(atl / 130, 1));
   let atlComment;
   if      (atl >= 90) atlComment = 'Heavy recent load — your body is working hard right now.';
@@ -461,7 +495,7 @@ function renderFitness() {
   // ── Form display + commentary ──
   // ── Form color: scales from deep red (-25) through amber (0) to bright green (+25) ──
   const formEl = document.getElementById('statForm');
-  formEl.textContent = (form >= 0 ? '+' : '') + form.toFixed(1);
+  formEl.innerHTML = (form >= 0 ? '+' : '') + form.toFixed(1) + delta(form, prev.form);
   formEl.style.color = fitnessColor((form + 25) / 50);
   let formComment;
   if      (form >= 10)  formComment = 'Peak form — you\'re fresh and primed to race or hit a PB.';
