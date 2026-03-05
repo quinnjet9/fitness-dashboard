@@ -225,6 +225,47 @@
   .fit-delta-down  { color: #ef4444; }   /* red    — going in bad direction  */
   .fit-delta-neutral { color: #6b7280; } /* grey   — no meaningful change    */
 
+  /* ===== MOBILE RESPONSIVE ===== */
+  /* Tablet (768px - 1024px) */
+  @media (max-width: 1024px) {
+    body { padding: 20px; }
+    .header { flex-direction: column; align-items: flex-start; gap: 20px; }
+    .controls { width: 100%; justify-content: flex-start; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .stat-value { font-size: 22px; }
+    .fitness-val { font-size: 20px; }
+    .chart-container { height: 320px; }
+  }
+
+  /* Mobile (< 768px) */
+  @media (max-width: 768px) {
+    body { padding: 16px; }
+    .header { gap: 16px; margin-bottom: 20px; }
+    .header-left { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .controls { flex-direction: column; align-items: flex-start; gap: 12px; }
+    .control-group { width: 100%; }
+    select { width: 100%; max-width: 100%; }
+    .stats-grid { grid-template-columns: 1fr; gap: 10px; }
+    .stat-value { font-size: 20px; }
+    .fitness-val { font-size: 18px; }
+    .fitness-row { flex-direction: column; gap: 12px; }
+    .fitness-item + .fitness-item { border-left: none; border-top: 1px solid var(--border); padding-left: 0; padding-top: 12px; }
+    .chart-container { height: 280px; }
+    .toggle-group { justify-content: center; }
+    .stat-card { padding: 14px 16px; }
+  }
+
+  /* Small mobile (< 480px) */
+  @media (max-width: 480px) {
+    body { padding: 12px; }
+    .header h1 { font-size: 18px; }
+    .header p, .stat-label, .fitness-key, .stat-sub { font-size: 10px; }
+    .stat-value { font-size: 18px; }
+    .fitness-val { font-size: 16px; }
+    .chart-container { height: 240px; }
+    .toggle-btn { padding: 3px 8px; font-size: 11px; }
+  }
+
 </style>
 </head>
 <body>
